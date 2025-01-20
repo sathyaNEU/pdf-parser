@@ -18,28 +18,32 @@ Remember to remove the key from your code when you're done, and never post it pu
 secure methods to store and access your credentials. For more information, see 
 https://docs.microsoft.com/en-us/azure/cognitive-services/cognitive-services-security?tabs=command-line%2Ccsharp#environment-variables-and-application-configuration
 """
+file_name = "table_data.pdf"
 print(endpoint,key)
 
-# sample document
-formUrl = "https://sfopenaccessbucket.s3.us-east-1.amazonaws.com/src.pdf"
+# read from local drive
+with open(f'docs/{file_name}',"rb") as f:
+    document_intelligence_client = DocumentIntelligenceClient(endpoint=endpoint, credential=AzureKeyCredential(key))
+    page = 2  
+    poller = document_intelligence_client.begin_analyze_document(
+        "prebuilt-layout",
+        body=f,
+        pages=f"{page}",
+        output=[AnalyzeOutputOption.FIGURES]
+    )
 
-
-document_intelligence_client = DocumentIntelligenceClient(endpoint=endpoint, credential=AzureKeyCredential(key))
-    
-poller = document_intelligence_client.begin_analyze_document(
-    "prebuilt-layout",
-    AnalyzeDocumentRequest(url_source=formUrl),
-    pages="11",
-    output=[AnalyzeOutputOption.FIGURES]
-)
-
-# document_analysis_client = DocumentAnalysisClient(
-#     endpoint=endpoint, credential=AzureKeyCredential(key)
+# read from an URL (deployed endpoint)    
+# formUrl = "https://sfopenaccessbucket.s3.us-east-1.amazonaws.com/src.pdf"
+# document_intelligence_client = DocumentIntelligenceClient(endpoint=endpoint, credential=AzureKeyCredential(key))
+# page = 2  
+# poller = document_intelligence_client.begin_analyze_document(
+#     "prebuilt-layout",
+#     AnalyzeDocumentRequest(url_source=formUrl),
+#     pages=f"{page}",
+#     output=[AnalyzeOutputOption.FIGURES]
 # )
 
-# poller = document_analysis_client.begin_analyze_document_from_url(
-#     "prebuilt-layout", formUrl, pages="11"
-# )       
+   
 
 result = poller.result()
 operation_id = poller.details["operation_id"]
@@ -89,5 +93,5 @@ if result.figures:
 else:
     print("No figures found.")
 
-with open('artifacts/data.json', 'w') as file:
+with open(f'artifacts/{file_name.strip('.pdf')}_page{page}.json', 'w') as file:
     json.dump(result.as_dict(), file)

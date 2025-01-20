@@ -1,4 +1,5 @@
 import fitz  # PyMuPDF
+import json
 from PIL import Image
 
 def extract_img_from_polygon(pdf_path, page_number, polygon, dpi=72):
@@ -33,9 +34,12 @@ def extract_img_from_polygon(pdf_path, page_number, polygon, dpi=72):
     return cropped_image
 
 # Example usage
+page_number = 15  # Page numbers are 0-indexed
 pdf_path = "docs/src.pdf"
-page_number = 10  # Page numbers are 0-indexed
-polygon = [1.1235, 2.2592, 7.0518, 2.2594, 7.053, 7.2459, 1.1252, 7.245]
+with open(f'artifacts/data_page{page_number}.json') as f:
+    data = json.load(f)
+polygon = data['figures'][0]['boundingRegions'][0]['polygon']
+# polygon = [1.1235, 2.2592, 7.0518, 2.2594, 7.053, 7.2459, 1.1252, 7.245]
 # polygon = [
 #                         0.9846,
 #                         8.8519,
@@ -46,4 +50,4 @@ polygon = [1.1235, 2.2592, 7.0518, 2.2594, 7.053, 7.2459, 1.1252, 7.245]
 #                         0.9842,
 #                         9.9644
 #                     ]
-extracted_image = extract_img_from_polygon(pdf_path, page_number, polygon)
+extracted_image = extract_img_from_polygon(pdf_path, page_number-1, polygon)
